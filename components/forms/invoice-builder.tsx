@@ -17,10 +17,9 @@ function mapToInvoiceItem(product: Product): InvoiceItem {
     id: `${product.id}-${Date.now()}`,
     productId: product.id,
     name: product.name,
-    sku: product.sku,
     quantity: 1,
-    price: product.price,
-    total: product.price,
+    price: product.sellPrice,
+    total: product.sellPrice,
   };
 }
 
@@ -37,7 +36,6 @@ export function InvoiceBuilder() {
   const [useVat, setUseVat] = useState(true);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
   const [paidAmount, setPaidAmount] = useState("0");
-  const [barcode, setBarcode] = useState("");
   const [search, setSearch] = useState("");
   const [lastInvoiceId, setLastInvoiceId] = useState<string | null>(null);
 
@@ -48,9 +46,7 @@ export function InvoiceBuilder() {
     }
     return products.filter((product) => {
       return (
-        product.name.toLowerCase().includes(query) ||
-        product.sku.toLowerCase().includes(query) ||
-        product.barcode?.toLowerCase().includes(query)
+        product.name.toLowerCase().includes(query)
       );
     });
   }, [products, search]);
@@ -132,22 +128,6 @@ export function InvoiceBuilder() {
     setSelectedProductId("");
   };
 
-  const handleBarcodeAdd = () => {
-    const value = barcode.trim().toLowerCase();
-    if (!value) {
-      return;
-    }
-    const product = products.find(
-      (item) =>
-        item.sku.toLowerCase() === value ||
-        item.barcode?.toLowerCase() === value
-    );
-    if (product) {
-      addItem(product);
-    }
-    setBarcode("");
-  };
-
   const handleCreateInvoice = () => {
     if (!items.length) {
       return;
@@ -223,24 +203,13 @@ export function InvoiceBuilder() {
                 Add
               </Button>
             </div>
-            <Input
-              label="Barcode / SKU"
-              value={barcode}
-              onChange={(e) => setBarcode(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleBarcodeAdd();
-                }
-              }}
-            />
           </div>
 
           <Input
             label="Search Products"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Name, SKU, barcode"
+            placeholder="Name"
           />
 
           <div className="grid max-h-48 gap-2 overflow-y-auto rounded-xl border border-slate-200 p-2 dark:border-slate-800">
@@ -252,10 +221,10 @@ export function InvoiceBuilder() {
                 disabled={product.stock <= 0}
               >
                 <span>
-                  {product.name} <span className="text-xs">({product.sku})</span>
+                  {product.name}
                 </span>
                 <span>
-                  {formatCurrency(product.price, settings.currency)} | {product.stock}
+                  {formatCurrency(product.sellPrice, settings.currency)} | {product.stock}
                 </span>
               </button>
             ))}

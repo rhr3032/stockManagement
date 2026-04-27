@@ -5,7 +5,6 @@ import { ProductForm } from "@/components/forms/product-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { SectionHeader } from "@/components/ui/section-header";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { usePOSStore } from "@/store/useStore";
@@ -19,12 +18,6 @@ export function ProductsScreen() {
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
-
-  const categories = useMemo(() => {
-    const all = new Set(products.map((product) => product.category));
-    return Array.from(all).sort();
-  }, [products]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -32,13 +25,10 @@ export function ProductsScreen() {
       const matchesQuery =
         !query ||
         product.name.toLowerCase().includes(query) ||
-        product.sku.toLowerCase().includes(query) ||
         product.barcode?.toLowerCase().includes(query);
-      const matchesCategory =
-        !categoryFilter || product.category === categoryFilter;
-      return matchesQuery && matchesCategory;
+      return matchesQuery;
     });
-  }, [categoryFilter, products, search]);
+  }, [products, search]);
 
   const editing = products.find((product) => product.id === editingId);
 
@@ -70,25 +60,13 @@ export function ProductsScreen() {
         </Card>
 
         <Card>
-          <div className="mb-4 grid gap-3 sm:grid-cols-2">
+          <div className="mb-4">
             <Input
               label="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Name, SKU, barcode"
+              placeholder="Name, barcode"
             />
-            <Select
-              label="Category"
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category}
-                </option>
-              ))}
-            </Select>
           </div>
 
           <div className="mb-3 flex items-center justify-between text-sm">
@@ -105,9 +83,8 @@ export function ProductsScreen() {
               <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
                   <th className="px-3 py-2 text-left">Name</th>
-                  <th className="px-3 py-2 text-left">SKU</th>
-                  <th className="px-3 py-2 text-left">Category</th>
-                  <th className="px-3 py-2 text-right">Price</th>
+                  <th className="px-3 py-2 text-right">Buy Price</th>
+                  <th className="px-3 py-2 text-right">Sell Price</th>
                   <th className="px-3 py-2 text-right">Stock</th>
                   <th className="px-3 py-2 text-left">Updated</th>
                   <th className="px-3 py-2 text-right">Actions</th>
@@ -117,10 +94,11 @@ export function ProductsScreen() {
                 {filtered.map((product) => (
                   <tr key={product.id} className="border-t border-slate-200 dark:border-slate-800">
                     <td className="px-3 py-2">{product.name}</td>
-                    <td className="px-3 py-2">{product.sku}</td>
-                    <td className="px-3 py-2">{product.category}</td>
                     <td className="px-3 py-2 text-right">
-                      {formatCurrency(product.price, settings.currency)}
+                      {formatCurrency(product.buyPrice, settings.currency)}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {formatCurrency(product.sellPrice, settings.currency)}
                     </td>
                     <td
                       className={`px-3 py-2 text-right ${

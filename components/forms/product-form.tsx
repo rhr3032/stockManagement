@@ -9,11 +9,9 @@ interface ProductFormProps {
   initial?: Partial<Product>;
   onSubmit: (payload: {
     name: string;
-    sku: string;
-    category: string;
-    price: number;
+    buyPrice: number;
+    sellPrice: number;
     stock: number;
-    barcode?: string;
   }) => void;
   onCancel?: () => void;
   submitLabel?: string;
@@ -26,15 +24,13 @@ export function ProductForm({
   submitLabel = "Save Product",
 }: ProductFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [sku, setSku] = useState(initial?.sku ?? "");
-  const [category, setCategory] = useState(initial?.category ?? "");
-  const [price, setPrice] = useState(initial?.price ? String(initial.price) : "");
+  const [buyPrice, setBuyPrice] = useState(initial?.buyPrice ? String(initial.buyPrice) : "");
+  const [sellPrice, setSellPrice] = useState(initial?.sellPrice ? String(initial.sellPrice) : "");
   const [stock, setStock] = useState(initial?.stock ? String(initial.stock) : "");
-  const [barcode, setBarcode] = useState(initial?.barcode ?? "");
 
   const disabled = useMemo(() => {
-    return !name.trim() || !sku.trim() || !category.trim();
-  }, [category, name, sku]);
+    return !name.trim() || !buyPrice.trim() || !sellPrice.trim();
+  }, [buyPrice, name, sellPrice]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -43,19 +39,15 @@ export function ProductForm({
     }
     onSubmit({
       name: name.trim(),
-      sku: sku.trim(),
-      category: category.trim(),
-      price: Math.max(0, Number(price) || 0),
+      buyPrice: Math.max(0, Number(buyPrice) || 0),
+      sellPrice: Math.max(0, Number(sellPrice) || 0),
       stock: Math.max(0, Number(stock) || 0),
-      barcode: barcode.trim() || undefined,
     });
     if (!initial?.id) {
       setName("");
-      setSku("");
-      setCategory("");
-      setPrice("");
+      setBuyPrice("");
+      setSellPrice("");
       setStock("");
-      setBarcode("");
     }
   };
 
@@ -63,32 +55,26 @@ export function ProductForm({
     <form className="grid gap-3" onSubmit={handleSubmit}>
       <Input label="Product Name" value={name} onChange={(e) => setName(e.target.value)} />
       <div className="grid gap-3 sm:grid-cols-2">
-        <Input label="SKU" value={sku} onChange={(e) => setSku(e.target.value)} />
         <Input
-          label="Category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        />
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Input
-          label="Price"
+          label="Buy Price"
           type="number"
           step="0.01"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          value={buyPrice}
+          onChange={(e) => setBuyPrice(e.target.value)}
         />
         <Input
-          label="Stock Quantity"
+          label="Sell Price"
           type="number"
-          value={stock}
-          onChange={(e) => setStock(e.target.value)}
+          step="0.01"
+          value={sellPrice}
+          onChange={(e) => setSellPrice(e.target.value)}
         />
       </div>
       <Input
-        label="Barcode (optional)"
-        value={barcode}
-        onChange={(e) => setBarcode(e.target.value)}
+        label="Stock Quantity"
+        type="number"
+        value={stock}
+        onChange={(e) => setStock(e.target.value)}
       />
 
       <div className="flex flex-wrap justify-end gap-2">

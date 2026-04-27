@@ -3,9 +3,8 @@ export type PaymentMethod = "Cash" | "Bkash" | "Nagad" | "Card";
 export interface Product {
   id: string;
   name: string;
-  sku: string;
-  category: string;
-  price: number;
+  buyPrice: number;
+  sellPrice: number;
   stock: number;
   barcode?: string;
   createdAt: string;
@@ -26,7 +25,6 @@ export interface InvoiceItem {
   id: string;
   productId: string;
   name: string;
-  sku: string;
   quantity: number;
   price: number;
   total: number;
