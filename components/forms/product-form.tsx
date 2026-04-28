@@ -12,6 +12,7 @@ interface ProductFormProps {
     buyPrice: number;
     sellPrice: number;
     stock: number;
+    supplierName?: string;
   }) => void;
   onCancel?: () => void;
   submitLabel?: string;
@@ -27,6 +28,7 @@ export function ProductForm({
   const [buyPrice, setBuyPrice] = useState(initial?.buyPrice ? String(initial.buyPrice) : "");
   const [sellPrice, setSellPrice] = useState(initial?.sellPrice ? String(initial.sellPrice) : "");
   const [stock, setStock] = useState(initial?.stock ? String(initial.stock) : "");
+  const [supplierName, setSupplierName] = useState("");
 
   const disabled = useMemo(() => {
     return !name.trim() || !buyPrice.trim() || !sellPrice.trim();
@@ -42,12 +44,14 @@ export function ProductForm({
       buyPrice: Math.max(0, Number(buyPrice) || 0),
       sellPrice: Math.max(0, Number(sellPrice) || 0),
       stock: Math.max(0, Number(stock) || 0),
+      supplierName: supplierName.trim() || undefined,
     });
     if (!initial?.id) {
       setName("");
       setBuyPrice("");
       setSellPrice("");
       setStock("");
+      setSupplierName("");
     }
   };
 
@@ -75,6 +79,11 @@ export function ProductForm({
         type="number"
         value={stock}
         onChange={(e) => setStock(e.target.value)}
+      />
+      <Input
+        label="Supplier Name"
+        value={supplierName}
+        onChange={(e) => setSupplierName(e.target.value)}
       />
 
       <div className="flex flex-wrap justify-end gap-2">

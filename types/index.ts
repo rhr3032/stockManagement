@@ -1,11 +1,22 @@
 export type PaymentMethod = "Cash" | "Bkash" | "Nagad" | "Card";
 
+export interface Supplier {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Product {
   id: string;
   name: string;
   buyPrice: number;
   sellPrice: number;
   stock: number;
+  supplierId?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -31,6 +31,8 @@ interface POSState {
   invoices: Invoice[];
   settings: BusinessSettings;
   setHydrated: (value: boolean) => void;
+  setProducts: (products: Product[]) => void;
+  setCustomers: (customers: Customer[]) => void;
   addProduct: (payload: Omit<Product, "id" | "createdAt" | "updatedAt">) => void;
   updateProduct: (id: string, payload: Partial<Omit<Product, "id">>) => void;
   deleteProduct: (id: string) => void;
@@ -65,6 +67,8 @@ export const usePOSStore = create<POSState>()(
       invoices: [],
       settings: defaultSettings,
       setHydrated: (value) => set({ hydrated: value }),
+      setProducts: (products) => set({ products }),
+      setCustomers: (customers) => set({ customers }),
       addProduct: (payload) =>
         set((state) => ({
           products: [

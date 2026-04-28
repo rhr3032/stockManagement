@@ -1,0 +1,207 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============= USER & AUTH =============
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(CASHIER)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices InvoiceMain[]
+  stockLogs StockLog[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  CASHIER
+}
+
+// ============= PRODUCT MANAGEMENT =============
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  sku         String   @unique
+  categoryId  String
+  buyPrice    Float    @default(0)
+  salePrice   Float    @default(0)
+  stockQty    Int      @default(0)
+  taxPercent  Float    @default(0)
+  image       String?
+  status      String   @default("active")
+  supplierId  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  supplier    Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  invoiceItems InvoiceItem[]
+  stockLogs   StockLog[]
+
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([sku])
+  @@map("products")
+}
+
+// ============= CUSTOMER MANAGEMENT =============
+model Customer {
+  id         String   @id @default(cuid())
+  name       String
+  phone      String   @unique
+  email      String?  @unique
+  address    String?
+  dueBalance Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  invoices InvoiceMain[]
+
+  @@map("customers")
+}
+
+// ============= SUPPLIER MANAGEMENT =============
+model Supplier {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  phone     String
+  company   String?
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@index([phone])
+  @@map("suppliers")
+}
+
+// ============= PAYMENT METHODS =============
+model PaymentMethod {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices InvoiceMain[]
+
+  @@map("payment_methods")
+}
+
+// ============= INVOICE MANAGEMENT =============
+model InvoiceMain {
+  id               String   @id @default(cuid())
+  invoiceNo        String   @unique
+  customerId       String?
+  subtotal         Float    @default(0)
+  discount         Float    @default(0)
+  vatTax           Float    @default(0)
+  grandTotal       Float    @default(0)
+  paidAmount       Float    @default(0)
+  dueAmount        Float    @default(0)
+  paymentMethodId  String
+  soldByUserId     String
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
+  soldByUser      User @relation(fields: [soldByUserId], references: [id], onDelete: Restrict)
+  items           InvoiceItem[]
+
+  @@index([customerId])
+  @@index([paymentMethodId])
+  @@index([soldByUserId])
+  @@index([invoiceNo])
+  @@index([createdAt])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id         String   @id @default(cuid())
+  invoiceId  String
+  productId  String
+  qty        Int
+  unitPrice  Float
+  totalPrice Float
+  createdAt  DateTime @default(now())
+
+  invoice    InvoiceMain @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([invoiceId])
+  @@index([productId])
+  @@map("invoice_items")
+}
+
+// ============= STOCK MANAGEMENT =============
+model StockLog {
+  id                  String   @id @default(cuid())
+  productId           String
+  type                StockLogType
+  qty                 Int
+  referenceInvoiceId  String?
+  notes               String?
+  createdByUserId     String
+  createdAt           DateTime @default(now())
+
+  product             Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  createdByUser       User @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
+
+  @@index([productId])
+  @@index([type])
+  @@index([createdAt])
+  @@index([createdByUserId])
+  @@map("stock_logs")
+}
+
+enum StockLogType {
+  SALE
+  PURCHASE
+  ADJUSTMENT
+  RETURN
+}
+
+// ============= SHOP SETTINGS =============
+model ShopSettings {
+  id            String   @id @default(cuid())
+  shopName      String
+  address       String?
+  phone         String?
+  invoicePrefix String   @default("INV")
+  logo          String?
+  footerText    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("shop_settings")
+}

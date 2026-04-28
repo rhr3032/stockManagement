@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
 import { useLocalStorageState } from "@/hooks/useLocalStorageState";
+import { useInitializeStore } from "@/hooks/useInitializeStore";
 import { cn } from "@/lib/utils";
 import { usePOSStore } from "@/store/useStore";
 
@@ -21,6 +22,7 @@ const links = [
 ];
 
 export function AppShell({ children }: AppShellProps) {
+  useInitializeStore();
   const pathname = usePathname();
   const settings = usePOSStore((state) => state.settings);
   const updateSettings = usePOSStore((state) => state.updateSettings);

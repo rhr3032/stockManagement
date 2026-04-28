@@ -8,13 +8,14 @@ import { Input } from "@/components/ui/input";
 import { SectionHeader } from "@/components/ui/section-header";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { usePOSStore } from "@/store/useStore";
+import { useApi } from "@/hooks/useApi";
 
 export function ProductsScreen() {
   const products = usePOSStore((state) => state.products);
   const settings = usePOSStore((state) => state.settings);
-  const addProduct = usePOSStore((state) => state.addProduct);
-  const updateProduct = usePOSStore((state) => state.updateProduct);
+  const updateLocalProducts = usePOSStore((state) => state.setProducts);
   const deleteProduct = usePOSStore((state) => state.deleteProduct);
+  const { post, put, remove, loading } = useApi();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -31,6 +32,77 @@ export function ProductsScreen() {
   }, [products, search]);
 
   const editing = products.find((product) => product.id === editingId);
+
+  const handleAddProduct = async (payload: {
+    name: string;
+    buyPrice: number;
+    sellPrice: number;
+    stock: number;
+    supplierName?: string;
+  }) => {
+    try {
+      const result = await post<any>("/api/product/create", {
+        name: payload.name,
+        sku: `SKU-${Date.now()}`, // Generate SKU if not provided
+        buyPrice: payload.buyPrice,
+        salePrice: payload.sellPrice,
+        stockQty: payload.stock,
+        taxPercent: 0,
+      });
+
+      if (result.data) {
+        // Update local store with new product from database
+        updateLocalProducts([...products, result.data]);
+      }
+    } catch (error) {
+      console.error("Failed to add product:", error);
+      alert("Failed to add product to database");
+    }
+  };
+
+  const handleUpdateProduct = async (
+    id: string,
+    payload: {
+      name: string;
+      buyPrice: number;
+      sellPrice: number;
+      stock: number;
+      supplierName?: string;
+    }
+  ) => {
+    try {
+      const result = await put<any>(`/api/product/${id}`, {
+        name: payload.name,
+        buyPrice: payload.buyPrice,
+        salePrice: payload.sellPrice,
+        stockQty: payload.stock,
+      });
+
+      if (result.data) {
+        // Update local store with modified product from database
+        updateLocalProducts(
+          products.map((p) => (p.id === id ? result.data : p))
+        );
+        setEditingId(null);
+      }
+    } catch (error) {
+      console.error("Failed to update product:", error);
+      alert("Failed to update product in database");
+    }
+  };
+
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      await remove(`/api/product/${id}`);
+      // Update local store
+      updateLocalProducts(products.filter((p) => p.id !== id));
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      alert("Failed to delete product from database");
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -49,10 +121,9 @@ export function ProductsScreen() {
             submitLabel={editing ? "Update Product" : "Add Product"}
             onSubmit={(payload) => {
               if (editing) {
-                updateProduct(editing.id, payload);
-                setEditingId(null);
+                handleUpdateProduct(editing.id, payload);
               } else {
-                addProduct(payload);
+                handleAddProduct(payload);
               }
             }}
             onCancel={editing ? () => setEditingId(null) : undefined}
@@ -120,7 +191,7 @@ export function ProductsScreen() {
                         <Button
                           size="sm"
                           variant="danger"
-                          onClick={() => deleteProduct(product.id)}
+                          onClick={() => handleDeleteProduct(product.id)}
                         >
                           Delete
                         </Button>
