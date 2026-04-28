@@ -1,12 +1,9 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   successResponse,
-  unauthorizedResponse,
   errorResponse,
   notFoundResponse,
-  forbiddenResponse,
 } from "@/lib/api-response";
 
 export async function GET(
@@ -14,11 +11,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
     const supplier = await prisma.supplier.findUnique({
       where: { id: params.id },
       include: {
@@ -42,15 +34,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
-    if (auth.role !== "ADMIN") {
-      return forbiddenResponse();
-    }
-
     const body = await req.json();
 
     const supplier = await prisma.supplier.update({
@@ -78,14 +61,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
-    if (auth.role !== "ADMIN") {
-      return forbiddenResponse();
-    }
 
     await prisma.supplier.delete({
       where: { id: params.id },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ProductForm } from "@/components/forms/product-form";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,16 +9,30 @@ import { SectionHeader } from "@/components/ui/section-header";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { usePOSStore } from "@/store/useStore";
 import { useApi } from "@/hooks/useApi";
+import { Category, Product } from "@/types";
 
 export function ProductsScreen() {
   const products = usePOSStore((state) => state.products);
   const settings = usePOSStore((state) => state.settings);
   const updateLocalProducts = usePOSStore((state) => state.setProducts);
-  const deleteProduct = usePOSStore((state) => state.deleteProduct);
-  const { post, put, remove, loading } = useApi();
+  const { post, put, remove, get } = useApi();
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      const result = await get<Array<Category & { _count?: { products: number } }>>(
+        "/api/category/list"
+      );
+      if (result?.data) {
+        setCategories(result.data);
+      }
+    };
+
+    loadCategories();
+  }, [get]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -35,14 +49,19 @@ export function ProductsScreen() {
 
   const handleAddProduct = async (payload: {
     name: string;
+    categoryId?: string;
+    unit?: string;
     buyPrice: number;
     sellPrice: number;
     stock: number;
     supplierName?: string;
   }) => {
     try {
-      const result = await post<any>("/api/product/create", {
+      const result = await post<Product>("/api/product/create", {
         name: payload.name,
+        categoryId: payload.categoryId,
+        unit: payload.unit,
+        supplierName: payload.supplierName,
         sku: `SKU-${Date.now()}`, // Generate SKU if not provided
         buyPrice: payload.buyPrice,
         salePrice: payload.sellPrice,
@@ -52,7 +71,7 @@ export function ProductsScreen() {
 
       if (result.data) {
         // Update local store with new product from database
-        updateLocalProducts([...products, result.data]);
+        updateLocalProducts([...products, { ...result.data, unit: payload.unit }]);
       }
     } catch (error) {
       console.error("Failed to add product:", error);
@@ -64,6 +83,8 @@ export function ProductsScreen() {
     id: string,
     payload: {
       name: string;
+      categoryId?: string;
+      unit?: string;
       buyPrice: number;
       sellPrice: number;
       stock: number;
@@ -71,8 +92,11 @@ export function ProductsScreen() {
     }
   ) => {
     try {
-      const result = await put<any>(`/api/product/${id}`, {
+      const result = await put<Product>(`/api/product/${id}`, {
         name: payload.name,
+        categoryId: payload.categoryId,
+        unit: payload.unit,
+        supplierName: payload.supplierName,
         buyPrice: payload.buyPrice,
         salePrice: payload.sellPrice,
         stockQty: payload.stock,
@@ -81,7 +105,7 @@ export function ProductsScreen() {
       if (result.data) {
         // Update local store with modified product from database
         updateLocalProducts(
-          products.map((p) => (p.id === id ? result.data : p))
+          products.map((p) => (p.id === id ? { ...result.data, unit: payload.unit } : p))
         );
         setEditingId(null);
       }
@@ -118,6 +142,7 @@ export function ProductsScreen() {
           </h3>
           <ProductForm
             initial={editing}
+            categories={categories}
             submitLabel={editing ? "Update Product" : "Add Product"}
             onSubmit={(payload) => {
               if (editing) {
@@ -150,10 +175,11 @@ export function ProductsScreen() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[820px] text-sm">
+            <table className="w-full min-w-205 text-sm">
               <thead className="bg-slate-50 dark:bg-slate-900">
                 <tr>
                   <th className="px-3 py-2 text-left">Name</th>
+                  <th className="px-3 py-2 text-left">Unit</th>
                   <th className="px-3 py-2 text-right">Buy Price</th>
                   <th className="px-3 py-2 text-right">Sell Price</th>
                   <th className="px-3 py-2 text-right">Stock</th>
@@ -165,6 +191,7 @@ export function ProductsScreen() {
                 {filtered.map((product) => (
                   <tr key={product.id} className="border-t border-slate-200 dark:border-slate-800">
                     <td className="px-3 py-2">{product.name}</td>
+                    <td className="px-3 py-2">{product.unit || "-"}</td>
                     <td className="px-3 py-2 text-right">
                       {formatCurrency(product.buyPrice, settings.currency)}
                     </td>
@@ -201,7 +228,7 @@ export function ProductsScreen() {
                 ))}
                 {!filtered.length ? (
                   <tr>
-                    <td className="px-3 py-4 text-slate-500" colSpan={7}>
+                    <td className="px-3 py-4 text-slate-500" colSpan={8}>
                       No products found.
                     </td>
                   </tr>

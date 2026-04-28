@@ -3,17 +3,21 @@
 import { FormEvent, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Product } from "@/types";
 
 interface ProductFormProps {
   initial?: Partial<Product>;
   onSubmit: (payload: {
     name: string;
+    categoryId?: string;
+    unit?: string;
     buyPrice: number;
     sellPrice: number;
     stock: number;
     supplierName?: string;
   }) => void;
+  categories?: Array<{ id: string; name: string }>;
   onCancel?: () => void;
   submitLabel?: string;
 }
@@ -21,10 +25,13 @@ interface ProductFormProps {
 export function ProductForm({
   initial,
   onSubmit,
+  categories = [],
   onCancel,
   submitLabel = "Save Product",
 }: ProductFormProps) {
   const [name, setName] = useState(initial?.name ?? "");
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
+  const [unit, setUnit] = useState(initial?.unit ?? "");
   const [buyPrice, setBuyPrice] = useState(initial?.buyPrice ? String(initial.buyPrice) : "");
   const [sellPrice, setSellPrice] = useState(initial?.sellPrice ? String(initial.sellPrice) : "");
   const [stock, setStock] = useState(initial?.stock ? String(initial.stock) : "");
@@ -41,6 +48,8 @@ export function ProductForm({
     }
     onSubmit({
       name: name.trim(),
+      categoryId: categoryId || undefined,
+      unit: unit.trim() || undefined,
       buyPrice: Math.max(0, Number(buyPrice) || 0),
       sellPrice: Math.max(0, Number(sellPrice) || 0),
       stock: Math.max(0, Number(stock) || 0),
@@ -48,6 +57,8 @@ export function ProductForm({
     });
     if (!initial?.id) {
       setName("");
+      setCategoryId("");
+      setUnit("");
       setBuyPrice("");
       setSellPrice("");
       setStock("");
@@ -58,6 +69,24 @@ export function ProductForm({
   return (
     <form className="grid gap-3" onSubmit={handleSubmit}>
       <Input label="Product Name" value={name} onChange={(e) => setName(e.target.value)} />
+      <Select
+        label="Category"
+        value={categoryId}
+        onChange={(e) => setCategoryId(e.target.value)}
+      >
+        <option value="">Select category</option>
+        {categories.map((category) => (
+          <option key={category.id} value={category.id}>
+            {category.name}
+          </option>
+        ))}
+      </Select>
+      <Input
+        label="Unit"
+        value={unit}
+        onChange={(e) => setUnit(e.target.value)}
+        placeholder="e.g. pcs, kg, liter"
+      />
       <div className="grid gap-3 sm:grid-cols-2">
         <Input
           label="Buy Price"

@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   createdResponse,
-  unauthorizedResponse,
   errorResponse,
   validationErrorResponse,
 } from "@/lib/api-response";
@@ -16,10 +14,6 @@ interface InvoiceItemInput {
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
 
     const body = await req.json();
     const {
@@ -103,7 +97,6 @@ export async function POST(req: NextRequest) {
           paidAmount,
           dueAmount,
           paymentMethodId,
-          soldByUserId: auth.userId,
           notes,
         },
       });
@@ -139,19 +132,6 @@ export async function POST(req: NextRequest) {
             type: "SALE",
             qty: -item.qty,
             referenceInvoiceId: createdInvoice.id,
-            createdByUserId: auth.userId,
-          },
-        });
-      }
-
-      // Update customer due balance
-      if (customerId) {
-        await tx.customer.update({
-          where: { id: customerId },
-          data: {
-            dueBalance: {
-              increment: dueAmount,
-            },
           },
         });
       }
@@ -170,12 +150,6 @@ export async function POST(req: NextRequest) {
         },
         customer: true,
         paymentMethod: true,
-        soldByUser: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
 

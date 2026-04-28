@@ -10,28 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============= USER & AUTH =============
-model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(CASHIER)
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
-  invoices InvoiceMain[]
-  stockLogs StockLog[]
-
-  @@index([email])
-  @@map("users")
-}
-
-enum Role {
-  ADMIN
-  CASHIER
-}
 
 // ============= PRODUCT MANAGEMENT =============
 model Category {
@@ -48,12 +27,11 @@ model Category {
 model Product {
   id          String   @id @default(cuid())
   name        String
-  sku         String   @unique
+  unit        String?
   categoryId  String
   buyPrice    Float    @default(0)
   salePrice   Float    @default(0)
   stockQty    Int      @default(0)
-  taxPercent  Float    @default(0)
   image       String?
   status      String   @default("active")
   supplierId  String?
@@ -67,7 +45,6 @@ model Product {
 
   @@index([categoryId])
   @@index([supplierId])
-  @@index([sku])
   @@map("products")
 }
 
@@ -81,8 +58,7 @@ model Customer {
   dueBalance Float    @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  invoices InvoiceMain[]
+invoices InvoiceMain[]
 
   @@map("customers")
 }
@@ -135,12 +111,10 @@ model InvoiceMain {
 
   customer        Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Restrict)
-  soldByUser      User @relation(fields: [soldByUserId], references: [id], onDelete: Restrict)
   items           InvoiceItem[]
 
   @@index([customerId])
   @@index([paymentMethodId])
-  @@index([soldByUserId])
   @@index([invoiceNo])
   @@index([createdAt])
   @@map("invoices")
@@ -171,16 +145,13 @@ model StockLog {
   qty                 Int
   referenceInvoiceId  String?
   notes               String?
-  createdByUserId     String
   createdAt           DateTime @default(now())
 
   product             Product @relation(fields: [productId], references: [id], onDelete: Restrict)
-  createdByUser       User @relation(fields: [createdByUserId], references: [id], onDelete: Restrict)
 
   @@index([productId])
   @@index([type])
   @@index([createdAt])
-  @@index([createdByUserId])
   @@map("stock_logs")
 }
 

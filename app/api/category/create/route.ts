@@ -1,25 +1,13 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   createdResponse,
-  unauthorizedResponse,
   errorResponse,
   validationErrorResponse,
-  forbiddenResponse,
 } from "@/lib/api-response";
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
-    if (auth.role !== "ADMIN") {
-      return forbiddenResponse();
-    }
-
     const body = await req.json();
     const { name } = body;
 

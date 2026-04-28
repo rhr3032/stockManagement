@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   successResponse,
-  unauthorizedResponse,
   errorResponse,
   notFoundResponse,
 } from "@/lib/api-response";
@@ -13,11 +11,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
     const invoice = await prisma.invoiceMain.findUnique({
       where: { id: params.id },
       include: {
@@ -28,12 +21,6 @@ export async function GET(
         },
         customer: true,
         paymentMethod: true,
-        soldByUser: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
       },
     });
 

@@ -10,9 +10,18 @@ export interface Supplier {
   updatedAt: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Product {
   id: string;
   name: string;
+  categoryId?: string;
+  unit?: string;
   buyPrice: number;
   sellPrice: number;
   stock: number;

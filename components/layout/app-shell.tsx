@@ -15,6 +15,7 @@ interface AppShellProps {
 const links = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/products", label: "Products" },
+  { href: "/categories", label: "Categories" },
   { href: "/customers", label: "Customers" },
   { href: "/invoices", label: "Create Invoice" },
   { href: "/sales", label: "Sales History" },
@@ -42,14 +43,14 @@ export function AppShell({ children }: AppShellProps) {
   }, [settings.darkMode]);
 
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_#f5f7ff_0%,_#f8fafc_45%,_#ffffff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top,_#0b1220_0%,_#020617_55%,_#020617_100%)] dark:text-slate-100">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#f5f7ff_0%,#f8fafc_45%,#ffffff_100%)] text-slate-900 dark:bg-[radial-gradient(circle_at_top,#0b1220_0%,#020617_55%,#020617_100%)] dark:text-slate-100">
       <button
         className="fixed left-3 top-3 z-30 rounded-xl border border-slate-300 bg-white px-3 py-1 text-xs dark:border-slate-700 dark:bg-slate-900 lg:hidden print:hidden"
         onClick={() => setMobileOpen((prev) => !prev)}
       >
         Menu
       </button>
-      <div className="mx-auto grid min-h-screen max-w-[1440px] lg:grid-cols-[220px_1fr]">
+      <div className="mx-auto grid min-h-screen max-w-360 lg:grid-cols-[220px_1fr]">
         <aside
           className={cn(
             "fixed inset-y-0 left-0 z-20 w-64 border-r border-slate-200 bg-white/90 p-5 backdrop-blur transition-transform dark:border-slate-800 dark:bg-slate-950/90 lg:static lg:w-auto lg:translate-x-0 print:hidden",

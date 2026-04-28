@@ -1,15 +1,10 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
-import { successResponse, unauthorizedResponse, errorResponse } from "@/lib/api-response";
+import { successResponse, errorResponse } from "@/lib/api-response";
+import { mapProductForClient } from "@/lib/product-mapper";
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
@@ -30,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     return successResponse(
       {
-        products,
+        products: products.map((product) => mapProductForClient(product)),
         pagination: {
           total,
           page,

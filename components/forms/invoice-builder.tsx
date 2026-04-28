@@ -1,16 +1,20 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 import { usePOSStore } from "@/store/useStore";
-import { InvoiceItem, PaymentMethod, Product } from "@/types";
+import { InvoiceItem, Product, Category } from "@/types";
 import { ReceiptView } from "@/components/receipt/receipt-view";
+import { useApi } from "@/hooks/useApi";
 
-const paymentMethods: PaymentMethod[] = ["Cash", "Bkash", "Nagad", "Card"];
+interface PaymentMethodOption {
+  id: string;
+  name: string;
+}
 
 function mapToInvoiceItem(product: Product): InvoiceItem {
   return {
@@ -28,28 +32,72 @@ export function InvoiceBuilder() {
   const customers = usePOSStore((state) => state.customers);
   const settings = usePOSStore((state) => state.settings);
   const addInvoice = usePOSStore((state) => state.addInvoice);
+  const setProducts = usePOSStore((state) => state.setProducts);
 
   const [customerId, setCustomerId] = useState("");
   const [selectedProductId, setSelectedProductId] = useState("");
   const [items, setItems] = useState<InvoiceItem[]>([]);
   const [discount, setDiscount] = useState("0");
   const [useVat, setUseVat] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Cash");
+  const [paymentMethodId, setPaymentMethodId] = useState("");
   const [paidAmount, setPaidAmount] = useState("0");
   const [search, setSearch] = useState("");
   const [lastInvoiceId, setLastInvoiceId] = useState<string | null>(null);
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethodOption[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const { get, post } = useApi();
+
+  // Load payment methods and categories on mount
+  useEffect(() => {
+    const loadPaymentMethods = async () => {
+      try {
+        const result = await get<PaymentMethodOption[]>("/api/payment-method/list");
+        if (result?.data && Array.isArray(result.data)) {
+          setPaymentMethods(result.data);
+          if (result.data.length > 0) {
+            setPaymentMethodId(result.data[0].id);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load payment methods:", err);
+      }
+    };
+    loadPaymentMethods();
+  }, [get]);
+
+  // Load categories on mount
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const result = await get<Array<Category & { _count?: { products: number } }>>("/api/category/list");
+        if (result?.data && Array.isArray(result.data)) {
+          setCategories(result.data);
+        }
+      } catch (err) {
+        console.error("Failed to load categories:", err);
+      }
+    };
+    loadCategories();
+  }, [get]);
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
-    if (!query) {
-      return products;
-    }
     return products.filter((product) => {
-      return (
-        product.name.toLowerCase().includes(query)
-      );
+      // Filter by category if selected
+      if (selectedCategoryId && product.categoryId !== selectedCategoryId) {
+        return false;
+      }
+      // Filter by search query
+      if (query && !product.name.toLowerCase().includes(query)) {
+        return false;
+      }
+      return true;
     });
-  }, [products, search]);
+  }, [products, search, selectedCategoryId]);
 
   const subtotal = useMemo(
     () => items.reduce((acc, item) => acc + item.total, 0),
@@ -128,33 +176,90 @@ export function InvoiceBuilder() {
     setSelectedProductId("");
   };
 
-  const handleCreateInvoice = () => {
+  const handleCreateInvoice = useCallback(async () => {
     if (!items.length) {
+      setError("Please add at least one item");
       return;
     }
-    const customer = customers.find((item) => item.id === customerId);
-    const invoice = addInvoice({
-      customerId: customer?.id,
-      customerName: customer?.name,
-      items,
-      discount: discountValue,
-      vatPercent: settings.vatPercent,
-      useVat,
-      paid,
-      paymentMethod,
-    });
+    
+    if (!paymentMethodId) {
+      setError("Please select a payment method");
+      return;
+    }
 
-    setLastInvoiceId(invoice.id);
-    setItems([]);
-    setDiscount("0");
-    setPaidAmount("0");
-    setCustomerId("");
-  };
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Prepare invoice items for API
+      const invoiceItems = items.map((item) => ({
+        productId: item.productId,
+        qty: item.quantity,
+        unitPrice: item.price,
+      }));
+
+      // Create invoice via backend API
+      const result = await post("/api/invoice/create", {
+        customerId: customerId || null,
+        items: invoiceItems,
+        subtotal,
+        discount: discountValue,
+        vatTax: useVat ? vatAmount : 0,
+        paidAmount: paid,
+        paymentMethodId,
+        notes: "",
+      });
+
+      if (result?.data) {
+        // Create local invoice for preview
+        const customer = customers.find((item) => item.id === customerId);
+        const invoice = addInvoice({
+          customerId: customer?.id,
+          customerName: customer?.name,
+          items,
+          discount: discountValue,
+          vatPercent: settings.vatPercent,
+          useVat,
+          paid,
+          paymentMethod: paymentMethods.find(m => m.id === paymentMethodId)?.name || "Unknown",
+        });
+
+        // Reload products to get updated stock
+        try {
+          const productsResult = await get<{ products: Product[] }>("/api/product/list?limit=1000");
+          if (productsResult?.data?.products) {
+            setProducts(productsResult.data.products);
+          }
+        } catch (err) {
+          console.error("Failed to reload products:", err);
+        }
+
+        setLastInvoiceId(invoice.id);
+        setItems([]);
+        setDiscount("0");
+        setPaidAmount("0");
+        setCustomerId("");
+      } else {
+        setError(result?.error || "Failed to create invoice");
+      }
+    } catch (err) {
+      console.error("Error creating invoice:", err);
+      setError("Failed to create invoice");
+    } finally {
+      setLoading(false);
+    }
+  }, [items, paymentMethodId, customerId, subtotal, discountValue, useVat, vatAmount, paid, customers, paymentMethods, post, get, addInvoice, settings.vatPercent, setProducts]);
 
   return (
     <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr] print:grid print:grid-cols-1 print:gap-0">
       <Card className="print:hidden">
         <div className="grid gap-4">
+          {error && (
+            <div className="rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-200">
+              {error}
+            </div>
+          )}
+
           <div className="grid gap-3 sm:grid-cols-2">
             <Select
               label="Customer"
@@ -170,16 +275,33 @@ export function InvoiceBuilder() {
             </Select>
             <Select
               label="Payment Method"
-              value={paymentMethod}
-              onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
+              value={paymentMethodId}
+              onChange={(e) => setPaymentMethodId(e.target.value)}
             >
+              <option value="">Select payment method</option>
               {paymentMethods.map((method) => (
-                <option key={method} value={method}>
-                  {method}
+                <option key={method.id} value={method.id}>
+                  {method.name}
                 </option>
               ))}
             </Select>
           </div>
+
+          <Select
+            label="Filter by Category"
+            value={selectedCategoryId}
+            onChange={(e) => {
+              setSelectedCategoryId(e.target.value);
+              setSelectedProductId(""); // Reset selected product when changing category
+            }}
+          >
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </Select>
 
           <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <Select
@@ -188,7 +310,7 @@ export function InvoiceBuilder() {
               onChange={(e) => setSelectedProductId(e.target.value)}
             >
               <option value="">Select product</option>
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <option key={product.id} value={product.id}>
                   {product.name} ({product.stock} in stock)
                 </option>
@@ -327,8 +449,8 @@ export function InvoiceBuilder() {
             </p>
           </div>
 
-          <Button onClick={handleCreateInvoice} disabled={!items.length}>
-            Save Invoice
+          <Button onClick={handleCreateInvoice} disabled={!items.length || loading || !paymentMethodId}>
+            {loading ? "Creating..." : "Save Invoice"}
           </Button>
         </div>
       </Card>

@@ -1,25 +1,15 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   createdResponse,
-  unauthorizedResponse,
   errorResponse,
   validationErrorResponse,
-  forbiddenResponse,
 } from "@/lib/api-response";
 import { validateProductForm } from "@/lib/validation";
+import { mapProductForClient } from "@/lib/product-mapper";
 
 export async function POST(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
-    if (auth.role !== "ADMIN") {
-      return forbiddenResponse();
-    }
 
     const body = await req.json();
 
@@ -31,47 +21,69 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const normalizedCategoryId =
+      typeof body.categoryId === "string" && body.categoryId.trim()
+        ? body.categoryId
+        : undefined;
+
+    const defaultCategory = !normalizedCategoryId
+      ? await prisma.category.upsert({
+          where: { name: "General" },
+          update: {},
+          create: { name: "General" },
+        })
+      : null;
+
+    const resolvedCategoryId = normalizedCategoryId ?? defaultCategory!.id;
+
+    const normalizedSupplierName =
+      typeof body.supplierName === "string" && body.supplierName.trim()
+        ? body.supplierName.trim()
+        : undefined;
+
+    const resolvedSupplierId = body.supplierId
+      ? body.supplierId
+      : normalizedSupplierName
+      ? (
+          await prisma.supplier.upsert({
+            where: { name: normalizedSupplierName },
+            update: {},
+            create: {
+              name: normalizedSupplierName,
+              phone: "N/A",
+            },
+          })
+        ).id
+      : undefined;
+
+    const {
     const {
       name,
-      sku,
-      categoryId,
       buyPrice,
       salePrice,
       stockQty = 0,
-      taxPercent = 0,
-      supplierId,
       image,
+      unit,
     } = body;
-
-    // Check if SKU already exists
-    const existingProduct = await prisma.product.findUnique({
-      where: { sku },
-    });
-
-    if (existingProduct) {
-      return errorResponse("Product with this SKU already exists", 409);
-    }
 
     // Create product
     const product = await prisma.product.create({
       data: {
         name,
-        sku,
-        categoryId,
+        categoryId: resolvedCategoryId,
         buyPrice,
         salePrice,
-        stockQty,
-        taxPercent,
-        supplierId,
-        image,
-      },
+        stockQty
       include: {
         category: true,
         supplier: true,
       },
     });
 
-    return createdResponse(product, "Product created successfully");
+    return createdResponse(
+      mapProductForClient(product),
+      "Product created successfully"
+    );
   } catch (error) {
     console.error("Create product error:", error);
     return errorResponse("Failed to create product", 500);

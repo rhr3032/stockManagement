@@ -1,9 +1,7 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   successResponse,
-  unauthorizedResponse,
   errorResponse,
   notFoundResponse,
 } from "@/lib/api-response";
@@ -13,10 +11,6 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
 
     const customer = await prisma.customer.findUnique({
       where: { id: params.id },
@@ -38,10 +32,6 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
 
     const body = await req.json();
 
@@ -70,10 +60,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
 
     await prisma.customer.delete({
       where: { id: params.id },

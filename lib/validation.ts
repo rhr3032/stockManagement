@@ -13,15 +13,18 @@ export function validatePassword(password: string): boolean {
   return password && password.length >= 6;
 }
 
-export function validateProductForm(data: any): ValidationResult {
+export function validateProductForm(data: Record<string, unknown>): ValidationResult {
   const errors: Record<string, string> = {};
 
   if (!data.name || typeof data.name !== "string" || !data.name.trim()) {
     errors.name = "Product name is required";
   }
 
-  if (!data.sku || typeof data.sku !== "string" || !data.sku.trim()) {
-    errors.sku = "SKU/Barcode is required";
+  if (
+    data.sku !== undefined &&
+    (typeof data.sku !== "string" || !data.sku.trim())
+  ) {
+    errors.sku = "SKU/Barcode must be a valid string";
   }
 
   if (typeof data.buyPrice !== "number" || data.buyPrice < 0) {
@@ -32,8 +35,12 @@ export function validateProductForm(data: any): ValidationResult {
     errors.salePrice = "Valid sale price is required";
   }
 
-  if (!data.categoryId || typeof data.categoryId !== "string") {
-    errors.categoryId = "Category is required";
+  if (data.categoryId !== undefined && typeof data.categoryId !== "string") {
+    errors.categoryId = "Category must be a valid string";
+  }
+
+  if (data.unit !== undefined && typeof data.unit !== "string") {
+    errors.unit = "Unit must be a valid string";
   }
 
   return {
@@ -42,7 +49,7 @@ export function validateProductForm(data: any): ValidationResult {
   };
 }
 
-export function validateCustomerForm(data: any): ValidationResult {
+export function validateCustomerForm(data: Record<string, unknown>): ValidationResult {
   const errors: Record<string, string> = {};
 
   if (!data.name || typeof data.name !== "string" || !data.name.trim()) {
@@ -63,7 +70,7 @@ export function validateCustomerForm(data: any): ValidationResult {
   };
 }
 
-export function validateSupplierForm(data: any): ValidationResult {
+export function validateSupplierForm(data: Record<string, unknown>): ValidationResult {
   const errors: Record<string, string> = {};
 
   if (!data.name || typeof data.name !== "string" || !data.name.trim()) {

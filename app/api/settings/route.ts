@@ -1,20 +1,12 @@
 import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { authenticateRequest } from "@/lib/middleware";
 import {
   successResponse,
-  unauthorizedResponse,
   errorResponse,
-  forbiddenResponse,
 } from "@/lib/api-response";
 
 export async function GET(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
     let settings = await prisma.shopSettings.findFirst();
 
     if (!settings) {
@@ -36,15 +28,6 @@ export async function GET(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
-    const auth = await authenticateRequest(req);
-    if (!auth) {
-      return unauthorizedResponse();
-    }
-
-    if (auth.role !== "ADMIN") {
-      return forbiddenResponse();
-    }
-
     const body = await req.json();
 
     let settings = await prisma.shopSettings.findFirst();
