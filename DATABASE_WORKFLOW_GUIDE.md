@@ -81,7 +81,7 @@ npx prisma studio
 SELECT * FROM users;
 
 -- See all products with categories
-SELECT p.name, p.sku, p.stock_qty, c.name as category 
+SELECT p.name, p.stock_qty, c.name as category 
 FROM products p 
 JOIN categories c ON p.category_id = c.id;
 
@@ -207,7 +207,7 @@ const invoice = await prisma.$transaction(async (tx) => {
       paidAmount,
       dueAmount: (subtotal + vatTax - discount) - paidAmount,
       paymentMethodId,
-      soldByUserId: user.id,
+      notes: 'Customer sale',
       items: {
         create: items.map(item => ({
           productId: item.productId,
@@ -239,17 +239,6 @@ const invoice = await prisma.$transaction(async (tx) => {
     });
   }
 
-  // Update customer due balance (if not full payment)
-  if (customerId) {
-    const dueAmount = (subtotal + vatTax - discount) - paidAmount;
-    if (dueAmount > 0) {
-      await tx.customer.update({
-        where: { id: customerId },
-        data: { dueBalance: { increment: dueAmount } }
-      });
-    }
-  }
-
   return invoiceMain;
 });
 
@@ -262,7 +251,7 @@ return successResponse(invoice);
 **Before Invoice Creation:**
 ```sql
 -- Product Stock
-SELECT name, stock_qty FROM products WHERE sku IN ('COLA001', 'RICE001');
+SELECT name, stock_qty FROM products WHERE name IN ('Coca Cola 330ml', 'Jasmine Rice 5kg');
 -- Coca Cola: 100 units
 -- Rice: 50 units
 
@@ -278,7 +267,7 @@ SELECT COUNT(*) FROM stock_logs WHERE type = 'SALE';
 **After Invoice Creation:**
 ```sql
 -- Product Stock DECREASED
-SELECT name, stock_qty FROM products WHERE sku IN ('COLA001', 'RICE001');
+SELECT name, stock_qty FROM products WHERE name IN ('Coca Cola 330ml', 'Jasmine Rice 5kg');
 -- Coca Cola: 98 units (was 100, sold 2)
 -- Rice: 49 units (was 50, sold 1)
 
@@ -362,7 +351,7 @@ SUPPLIERS TABLE
 
 PRODUCTS TABLE (6 products)
 ├── Coca Cola 330ml
-│   ├── SKU: COLA001
+│   ├── Product: Coca Cola 330ml
 │   ├── Buy Price: $1.20
 │   ├── Sell Price: $2.50
 │   ├── Stock: 98 units (was 100, sold 2 in INV-001)
@@ -585,7 +574,7 @@ A: In INV-001, we sold 2 Coca Cola (100 - 2 = 98)
 A: In stock_logs table - shows every inventory change
 
 **Q: How is payment tracked?**
-A: paid_amount vs due_amount in invoices, and customer.dueBalance
+A: paid_amount vs due_amount in invoices
 
 **Q: What if stock runs out?**
 A: Invoice creation fails with "Insufficient stock" error - atomicity prevents any partial updates

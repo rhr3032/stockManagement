@@ -160,7 +160,7 @@ This will automatically:
 - Recent transactions
 
 ✅ **Search & Filtering**
-- Product search by name/SKU
+- Product search by name
 - Customer search
 - Paginated lists
 - Case-insensitive matching

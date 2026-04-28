@@ -73,7 +73,6 @@ curl "http://localhost:3000/api/product/list?page=1&limit=20" \
     {
       "id": "prod_cola",
       "name": "Coca Cola 330ml",
-      "sku": "COLA001",
       "stockQty": 98,
       "salePrice": 2.5,
       "categoryName": "Beverages",
@@ -82,7 +81,6 @@ curl "http://localhost:3000/api/product/list?page=1&limit=20" \
     {
       "id": "prod_rice",
       "name": "Jasmine Rice 5kg",
-      "sku": "RICE001",
       "stockQty": 49,
       "salePrice": 18.5,
       "categoryName": "Groceries",
@@ -116,24 +114,24 @@ curl "http://localhost:3000/api/customer/list?page=1&limit=20" \
       "name": "John Doe",
       "phone": "+65 9111 2222",
       "email": "john@example.com",
-      "dueBalance": 0
+      "createdAt": "2024-04-28T10:30:00Z"
     },
     {
       "id": "cust_jane",
       "name": "Jane Smith",
       "phone": "+65 9333 4444",
       "email": "jane@example.com",
-      "dueBalance": 0
+      "createdAt": "2024-04-28T10:31:00Z"
     },
     ...
   ]
 }
-```
+          "stockQty": 100
 
 ---
 
 ## 🛒 Step 4: Create Your Own Invoice (See Stock Update!)
-
+          "stockQty": 50
 Get IDs first:
 
 ```bash
@@ -200,7 +198,7 @@ curl -X POST http://localhost:3000/api/invoice/create \
         "totalPrice": 7.5,
         "product": {
           "name": "Coca Cola 330ml",
-          "sku": "COLA001"
+          "stockQty": 98
         }
       },
       {
@@ -209,7 +207,7 @@ curl -X POST http://localhost:3000/api/invoice/create \
         "totalPrice": 11,
         "product": {
           "name": "Fresh Milk 1L",
-          "sku": "MILK001"
+          "stockQty": 48
         }
       }
     ]

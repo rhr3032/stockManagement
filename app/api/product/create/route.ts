@@ -57,7 +57,6 @@ export async function POST(req: NextRequest) {
       : undefined;
 
     const {
-    const {
       name,
       buyPrice,
       salePrice,
@@ -73,7 +72,11 @@ export async function POST(req: NextRequest) {
         categoryId: resolvedCategoryId,
         buyPrice,
         salePrice,
-        stockQty
+        stockQty,
+        image,
+        unit,
+        supplierId: resolvedSupplierId,
+      },
       include: {
         category: true,
         supplier: true,

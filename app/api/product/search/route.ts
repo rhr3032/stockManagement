@@ -17,7 +17,6 @@ export async function GET(req: NextRequest) {
       where: {
         OR: [
           { name: { contains: q, mode: "insensitive" } },
-          { sku: { contains: q, mode: "insensitive" } },
         ],
       },
       take: limit,

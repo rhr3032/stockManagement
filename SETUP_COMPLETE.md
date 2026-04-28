@@ -180,7 +180,7 @@ Watch as:
 
 ### **Before Transaction:**
 ```sql
-SELECT * FROM products WHERE sku = 'COLA001';
+SELECT * FROM products WHERE name = 'Coca Cola 330ml';
 -- stock_qty: 100
 ```
 
@@ -194,7 +194,7 @@ POST /api/invoice/create
 
 ### **After Transaction:**
 ```sql
-SELECT * FROM products WHERE sku = 'COLA001';
+SELECT * FROM products WHERE name = 'Coca Cola 330ml';
 -- stock_qty: 98 (automatically decreased!)
 
 SELECT * FROM stock_logs WHERE type = 'SALE';

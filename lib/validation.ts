@@ -20,13 +20,6 @@ export function validateProductForm(data: Record<string, unknown>): ValidationRe
     errors.name = "Product name is required";
   }
 
-  if (
-    data.sku !== undefined &&
-    (typeof data.sku !== "string" || !data.sku.trim())
-  ) {
-    errors.sku = "SKU/Barcode must be a valid string";
-  }
-
   if (typeof data.buyPrice !== "number" || data.buyPrice < 0) {
     errors.buyPrice = "Valid buy price is required";
   }

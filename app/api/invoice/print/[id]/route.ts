@@ -20,8 +20,6 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                sku: true,
-                taxPercent: true,
               },
             },
           },
@@ -65,11 +63,9 @@ export async function GET(
       // Items
       items: invoice.items.map((item) => ({
         name: item.product.name,
-        sku: item.product.sku,
         qty: item.qty,
         unitPrice: item.unitPrice,
         totalPrice: item.totalPrice,
-        tax: item.totalPrice * (item.product.taxPercent / 100),
       })),
       // Summary
       summary: {

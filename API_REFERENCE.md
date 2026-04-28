@@ -92,15 +92,13 @@ Response:
 {
   "success": true,
   "data": {
-    "products": [
+      "products": [
       {
         "id": "prod_1",
         "name": "Milk 1L",
-        "sku": "MILK001",
         "buyPrice": 50,
         "salePrice": 80,
         "stockQty": 100,
-        "taxPercent": 5,
         "status": "active",
         "category": { "id": "cat_1", "name": "Dairy" },
         "supplier": { "id": "sup_1", "name": "Best Foods" }
@@ -123,12 +121,10 @@ Request:
 ```json
 {
   "name": "Milk 1L",
-  "sku": "MILK001",
   "categoryId": "cat_1",
   "buyPrice": 50,
   "salePrice": 80,
   "stockQty": 100,
-  "taxPercent": 5,
   "supplierId": "sup_1",
   "image": "url_or_base64"
 }
@@ -154,7 +150,6 @@ Response:
     {
       "id": "prod_1",
       "name": "Milk 1L",
-      "sku": "MILK001",
       "salePrice": 80,
       "stockQty": 100
     }
@@ -334,7 +329,6 @@ Response:
     "paidAmount": 315,
     "dueAmount": 0,
     "paymentMethodId": "pm_1",
-    "soldByUserId": "user_1",
     "createdAt": "2024-04-28T10:30:00Z",
     "items": [
       {
@@ -346,7 +340,6 @@ Response:
         "product": {
           "id": "prod_1",
           "name": "Milk 1L",
-          "sku": "MILK001"
         }
       }
     ],
@@ -413,7 +406,6 @@ Response:
     "items": [
       {
         "name": "Milk 1L",
-        "sku": "MILK001",
         "qty": 2,
         "unitPrice": 80,
         "totalPrice": 160,
@@ -496,7 +488,6 @@ Response:
         {
           "id": "prod_1",
           "name": "Milk 1L",
-          "sku": "MILK001",
           "stockQty": 3,
           "salePrice": 80
         }

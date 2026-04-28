@@ -59,7 +59,6 @@ export async function GET(req: NextRequest) {
       select: {
         id: true,
         name: true,
-        sku: true,
         stockQty: true,
         salePrice: true,
       },

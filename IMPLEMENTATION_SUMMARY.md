@@ -10,7 +10,7 @@ A **production-ready SaaS-style POS Billing & Invoice System** with Neon Postgre
 
 ### ✅ Database Architecture (9 Models)
 - **User** - Admin/Cashier roles with JWT auth
-- **Product** - Inventory with SKU/barcode, pricing, stock
+- **Product** - Inventory with pricing, stock, category, and supplier
 - **Category** - Product categorization
 - **Customer** - Customer profiles with due tracking
 - **Supplier** - Supplier management linked to products
@@ -34,7 +34,7 @@ A **production-ready SaaS-style POS Billing & Invoice System** with Neon Postgre
 - ✅ Get product details
 - ✅ Update product
 - ✅ Delete product
-- ✅ Search products by name/SKU
+- ✅ Search products by name
 
 ### ✅ Customer Management (6 Endpoints)
 - ✅ List customers (paginated)
@@ -330,7 +330,6 @@ POST http://localhost:3000/api/product/create
 Authorization: Bearer <token>
 {
   "name": "Milk 1L",
-  "sku": "MILK001",
   "categoryId": "...",
   "buyPrice": 50,
   "salePrice": 80,

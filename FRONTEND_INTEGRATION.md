@@ -172,7 +172,6 @@ export function ProductsScreen() {
         <thead>
           <tr>
             <th>Name</th>
-            <th>SKU</th>
             <th>Buy Price</th>
             <th>Sale Price</th>
             <th>Stock</th>
@@ -183,7 +182,6 @@ export function ProductsScreen() {
           {products.map((product) => (
             <tr key={product.id}>
               <td>{product.name}</td>
-              <td>{product.sku || "—"}</td>
               <td>৳{product.buyPrice}</td>
               <td>৳{product.salePrice}</td>
               <td>{product.stock}</td>

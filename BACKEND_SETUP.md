@@ -189,12 +189,11 @@ Content-Type: application/json
 
 {
   "name": "Milk 1L",
-  "sku": "MILK001",
   "categoryId": "category_id_here",
   "buyPrice": 50,
   "salePrice": 80,
   "stockQty": 100,
-  "taxPercent": 5
+  "image": null
 }
 ```
 

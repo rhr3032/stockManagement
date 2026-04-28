@@ -74,7 +74,7 @@ All forms now properly persist data to the PostgreSQL database. Here's how to ve
 
 ### When you add a Product:
 - ✅ Stored in `products` table
-- ✅ SKU auto-generated if not provided
+- ✅ Product create accepts the current schema fields only
 - ✅ Category linked correctly
 - ✅ Supplier auto-created if name provided
 

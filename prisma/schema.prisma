@@ -55,10 +55,10 @@ model Customer {
   phone      String   @unique
   email      String?  @unique
   address    String?
-  dueBalance Float    @default(0)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-invoices InvoiceMain[]
+
+  invoices   InvoiceMain[]
 
   @@map("customers")
 }
@@ -104,7 +104,6 @@ model InvoiceMain {
   paidAmount       Float    @default(0)
   dueAmount        Float    @default(0)
   paymentMethodId  String
-  soldByUserId     String
   notes            String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

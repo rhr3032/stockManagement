@@ -189,12 +189,10 @@ User
 Product
 ├── id (string, primary key)
 ├── name (string)
-├── sku (string, unique, barcode)
 ├── categoryId (foreign key)
 ├── buyPrice (float)
 ├── salePrice (float)
 ├── stockQty (integer)
-├── taxPercent (float)
 ├── image (string, optional)
 ├── status (string)
 ├── supplierId (foreign key, optional)
@@ -219,7 +217,6 @@ Customer
 ├── phone (string)
 ├── email (string, optional)
 ├── address (string, optional)
-├── dueBalance (float)
 ├── createdAt (datetime)
 └── updatedAt (datetime)
 ```
@@ -259,7 +256,6 @@ InvoiceMain
 ├── paidAmount (float)
 ├── dueAmount (float)
 ├── paymentMethodId (foreign key)
-├── soldByUserId (foreign key)
 ├── notes (string, optional)
 ├── createdAt (datetime)
 └── updatedAt (datetime)

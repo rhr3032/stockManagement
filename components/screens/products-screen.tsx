@@ -62,11 +62,9 @@ export function ProductsScreen() {
         categoryId: payload.categoryId,
         unit: payload.unit,
         supplierName: payload.supplierName,
-        sku: `SKU-${Date.now()}`, // Generate SKU if not provided
         buyPrice: payload.buyPrice,
         salePrice: payload.sellPrice,
         stockQty: payload.stock,
-        taxPercent: 0,
       });
 
       if (result.data) {

@@ -67,13 +67,13 @@
 │  ├──────────────────────────────────────────────────────────────────────┤  │
 │  │ id          String @id @unique                                      │  │
 │  │ name        String                                                  │  │
-│  │ sku         String @unique                       [Unique Index]     │  │
+│  │ -- barcode field removed from schema                                 │  │
 │  │ categoryId  String @foreign(categories.id)       [Index]            │  │
 │  │ supplierId  String? @foreign(suppliers.id)       [Index]            │  │
 │  │ buyPrice    Float (cost from supplier)                              │  │
 │  │ salePrice   Float (selling price)                                   │  │
 │  │ stockQty    Int (decremented on sale)                               │  │
-│  │ taxPercent  Float (VAT percentage)                                  │  │
+│  │ -- tax handled at invoice level                                      │  │
 │  │ image       String? (optional image URL)                            │  │
 │  │ status      String (default: "active")                              │  │
 │  │ createdAt   DateTime @default(now())                                │  │
@@ -102,7 +102,7 @@
 │  │ phone       String @unique                       [Unique Index]     │  │
 │  │ email       String? @unique                      [Unique Index]     │  │
 │  │ address     String? (optional)                                      │  │
-│  │ dueBalance  Float (tracks credit owed)           @default(0)        │  │
+│  │ -- customer credit is not tracked                                    
 │  │ createdAt   DateTime @default(now())                                │  │
 │  │ updatedAt   DateTime @updatedAt                                     │  │
 │  │                                                                      │  │
@@ -141,7 +141,7 @@
 │  │ invoiceNo       String @unique                  [Unique Index]      │  │
 │  │ customerId      String? @foreign(customers.id)  [Index]             │  │
 │  │ paymentMethodId String @foreign(payment_methods.id)                 │  │
-│  │ soldByUserId    String @foreign(users.id)       [Index]             │  │
+│  │ -- invoice ownership is not tracked                                  │  │
 │  │ subtotal        Float (sum of items)                                │  │
 │  │ discount        Float (discount amount)                             │  │
 │  │ vatTax          Float (calculated tax)                              │  │
@@ -191,7 +191,7 @@
 │  │ qty                Int (quantity changed)                            │  │
 │  │ referenceInvoiceId String? (which invoice caused change)            │  │
 │  │ notes              String? (optional notes)                         │  │
-│  │ createdByUserId    String @foreign(users.id)    [Index]             │  │
+│  │ -- createdByUserId removed from stock_logs examples                   │  │
 │  │ createdAt          DateTime @default(now())     [Index]             │  │
 │  │                                                                      │  │
 │  │ Relationships:                                                       │  │
@@ -344,14 +344,14 @@ STEP 4: Response Returned
 - ✅ Updates propagate correctly
 
 ### **Integrity**
-- ✅ Unique constraints (email, phone, SKU)
+- ✅ Unique constraints (email, phone)
 - ✅ Not null constraints
 - ✅ Foreign key constraints
 - ✅ Check constraints (stock can't go negative)
 
 ### **Performance**
 - ✅ Indexes on foreign keys
-- ✅ Indexes on frequently searched fields (email, SKU)
+- ✅ Indexes on frequently searched fields (email)
 - ✅ Indexes on date columns (for filtering)
 - ✅ Composite indexes for common queries
 
