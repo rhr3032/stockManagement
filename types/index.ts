@@ -6,7 +6,6 @@ export interface Product {
   buyPrice: number;
   sellPrice: number;
   stock: number;
-  barcode?: string;
   createdAt: string;
   updatedAt: string;
 }
