@@ -11,7 +11,7 @@ export function ReceiptView({ invoice, settings }: ReceiptViewProps) {
 
   return (
     <article
-      className="receipt-print mono mx-auto w-full max-w-sm rounded-2xl border border-slate-300 bg-white p-4 text-[11px] text-black shadow-sm dark:border-slate-700"
+      className="receipt-print mono mx-auto w-full max-w-sm bg-white p-4 text-[11px] text-black print:p-0 print:mx-0 print:max-w-none"
       data-size={settings.paperSize}
     >
       <div className="text-center">

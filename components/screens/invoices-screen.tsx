@@ -10,6 +10,7 @@ export function InvoicesScreen() {
       <SectionHeader
         title="Create Invoice"
         description="Build invoice, collect payment, and print thermal receipt."
+        className="print:hidden"
       />
       <Card className="print:hidden">
         <p className="text-sm text-slate-600 dark:text-slate-400">

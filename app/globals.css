@@ -39,16 +39,26 @@ body {
 }
 
 @media print {
+  @page {
+    size: auto;
+    margin: 0;
+    padding: 0;
+  }
+
   html,
   body {
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
     color: #000 !important;
+    width: 100%;
+    height: 100%;
   }
 
   aside,
   header,
+  footer,
+  nav,
   .print\:hidden,
   .no-print {
     display: none !important;
@@ -58,6 +68,9 @@ body {
     margin: 0 !important;
     padding: 0 !important;
     max-width: none !important;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .receipt-print {
@@ -70,6 +83,7 @@ body {
     font-family: var(--font-ibm-mono), monospace !important;
     font-size: 11px !important;
     line-height: 1.35 !important;
+    page-break-after: avoid !important;
   }
 
   .receipt-print[data-size="58mm"] {

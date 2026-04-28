@@ -152,7 +152,7 @@ export function InvoiceBuilder() {
   };
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr]">
+    <div className="grid gap-5 xl:grid-cols-[1.35fr_1fr] print:grid print:grid-cols-1 print:gap-0">
       <Card className="print:hidden">
         <div className="grid gap-4">
           <div className="grid gap-3 sm:grid-cols-2">
@@ -181,7 +181,7 @@ export function InvoiceBuilder() {
             </Select>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
             <Select
               label="Add Product"
               value={selectedProductId}
@@ -333,7 +333,7 @@ export function InvoiceBuilder() {
         </div>
       </Card>
 
-      <Card className="print:border-0 print:bg-transparent print:p-0 print:shadow-none">
+      <Card className="print:border-0 print:bg-transparent print:p-0 print:shadow-none print:flex print:justify-center print:w-full">
         <div className="mb-3 flex items-center justify-between print:hidden">
           <h3 className="text-lg font-semibold">Receipt Preview</h3>
           <Button
