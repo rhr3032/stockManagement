@@ -8,11 +8,12 @@ import {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supplier = await prisma.supplier.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         products: true,
       },
@@ -31,13 +32,14 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
     const supplier = await prisma.supplier.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         phone: body.phone,
@@ -58,15 +60,16 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
 
     await prisma.supplier.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
-    return successResponse({ id: params.id }, "Supplier deleted");
+    return successResponse({ id }, "Supplier deleted");
   } catch (error) {
     console.error("Delete supplier error:", error);
     if ((error as any).code === "P2025") {

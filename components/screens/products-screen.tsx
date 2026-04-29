@@ -37,11 +37,7 @@ export function ProductsScreen() {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     return products.filter((product) => {
-      const matchesQuery =
-        !query ||
-        product.name.toLowerCase().includes(query) ||
-        product.barcode?.toLowerCase().includes(query);
-      return matchesQuery;
+      return !query || product.name.toLowerCase().includes(query);
     });
   }, [products, search]);
 
@@ -67,9 +63,10 @@ export function ProductsScreen() {
         stockQty: payload.stock,
       });
 
-      if (result.data) {
+      const createdProduct = result?.data;
+      if (createdProduct) {
         // Update local store with new product from database
-        updateLocalProducts([...products, { ...result.data, unit: payload.unit }]);
+        updateLocalProducts([...products, { ...createdProduct, unit: payload.unit }]);
       }
     } catch (error) {
       console.error("Failed to add product:", error);
@@ -100,10 +97,11 @@ export function ProductsScreen() {
         stockQty: payload.stock,
       });
 
-      if (result.data) {
+      const updatedProduct = result?.data;
+      if (updatedProduct) {
         // Update local store with modified product from database
         updateLocalProducts(
-          products.map((p) => (p.id === id ? { ...result.data, unit: payload.unit } : p))
+          products.map((p) => (p.id === id ? { ...updatedProduct, unit: payload.unit } : p))
         );
         setEditingId(null);
       }
@@ -159,7 +157,7 @@ export function ProductsScreen() {
               label="Search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Name, barcode"
+              placeholder="Name"
             />
           </div>
 

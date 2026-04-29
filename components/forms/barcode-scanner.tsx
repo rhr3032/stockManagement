@@ -14,7 +14,7 @@ export function BarcodeScanner({ isActive, onBarcodeDetected, onClose }: Barcode
   const [error, setError] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState(false);
   const barcodeBufferRef = useRef<string>("");
-  const timeoutRef = useRef<NodeJS.Timeout>();
+  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
   useEffect(() => {
     if (!isActive) return;

@@ -9,11 +9,12 @@ import { mapProductForClient } from "@/lib/product-mapper";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const product = await prisma.product.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         category: true,
         supplier: true,
@@ -33,9 +34,10 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await req.json();
 
     const normalizedCategoryId =
@@ -72,7 +74,7 @@ export async function PUT(
       : undefined;
 
     const product = await prisma.product.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         categoryId: normalizedCategoryId ?? defaultCategory?.id,
@@ -105,14 +107,15 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     await prisma.product.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
-    return successResponse({ id: params.id }, "Product deleted");
+    return successResponse({ id }, "Product deleted");
   } catch (error) {
     console.error("Delete product error:", error);
     if ((error as { code?: string }).code === "P2025") {

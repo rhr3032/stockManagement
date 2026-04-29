@@ -10,6 +10,7 @@ import { usePOSStore } from "@/store/useStore";
 import { InvoiceItem, Product, Category } from "@/types";
 import { ReceiptView } from "@/components/receipt/receipt-view";
 import { useApi } from "@/hooks/useApi";
+import { PaymentMethod } from "@/types";
 
 interface PaymentMethodOption {
   id: string;
@@ -25,6 +26,18 @@ function mapToInvoiceItem(product: Product): InvoiceItem {
     price: product.sellPrice,
     total: product.sellPrice,
   };
+}
+
+function normalizePaymentMethod(name: string | undefined): PaymentMethod {
+  const normalized = (name || "").trim().toLowerCase();
+
+  if (normalized.includes("bkash")) return "Bkash";
+  if (normalized.includes("nagad")) return "Nagad";
+  if (normalized.includes("card") || normalized.includes("credit") || normalized.includes("debit")) {
+    return "Card";
+  }
+
+  return "Cash";
 }
 
 export function InvoiceBuilder() {
@@ -213,6 +226,9 @@ export function InvoiceBuilder() {
       if (result?.data) {
         // Create local invoice for preview
         const customer = customers.find((item) => item.id === customerId);
+        const selectedPaymentMethod = normalizePaymentMethod(
+          paymentMethods.find((method) => method.id === paymentMethodId)?.name
+        );
         const invoice = addInvoice({
           customerId: customer?.id,
           customerName: customer?.name,
@@ -221,7 +237,7 @@ export function InvoiceBuilder() {
           vatPercent: settings.vatPercent,
           useVat,
           paid,
-          paymentMethod: paymentMethods.find(m => m.id === paymentMethodId)?.name || "Unknown",
+          paymentMethod: selectedPaymentMethod,
         });
 
         // Reload products to get updated stock

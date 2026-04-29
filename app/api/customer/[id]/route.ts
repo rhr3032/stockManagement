@@ -8,12 +8,13 @@ import {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
 
     const customer = await prisma.customer.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!customer) {
@@ -29,14 +30,15 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
 
     const body = await req.json();
 
     const customer = await prisma.customer.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         name: body.name,
         phone: body.phone,
@@ -57,15 +59,16 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
 
     await prisma.customer.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
-    return successResponse({ id: params.id }, "Customer deleted");
+    return successResponse({ id }, "Customer deleted");
   } catch (error) {
     console.error("Delete customer error:", error);
     if ((error as any).code === "P2025") {

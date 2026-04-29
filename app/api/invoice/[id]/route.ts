@@ -8,11 +8,12 @@ import {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const invoice = await prisma.invoiceMain.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         items: {
           include: {

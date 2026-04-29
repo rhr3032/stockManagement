@@ -10,7 +10,7 @@ export function validateEmail(email: string): boolean {
 
 export function validatePassword(password: string): boolean {
   // At least 6 characters
-  return password && password.length >= 6;
+  return Boolean(password) && password.length >= 6;
 }
 
 export function validateProductForm(data: Record<string, unknown>): ValidationResult {
@@ -53,7 +53,7 @@ export function validateCustomerForm(data: Record<string, unknown>): ValidationR
     errors.phone = "Phone number is required";
   }
 
-  if (data.email && !validateEmail(data.email)) {
+  if (typeof data.email === "string" && data.email && !validateEmail(data.email)) {
     errors.email = "Invalid email address";
   }
 
